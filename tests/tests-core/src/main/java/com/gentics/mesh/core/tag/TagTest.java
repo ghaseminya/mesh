@@ -20,11 +20,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -32,7 +32,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -137,7 +136,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibBranch branch = project.getLatestBranch();
 			HibTag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
+			assertNotNull(boot().tagDao().findByUuidGlobal(uuid));
 
 			// 2. Create the node
 			final String GERMAN_TEST_FILENAME = "german.html";
@@ -153,7 +152,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			tagDao.addTag(node, tag, branch);
 
 			// 4. Reload the tag and inspect the tagged nodes
-			HibTag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid());
+			HibTag reloadedTag = boot().tagDao().findByUuidGlobal(tag.getUuid());
 			assertEquals("The tag should have exactly one node.", 1, tagDao.getNodes(reloadedTag, branch).count());
 			HibNode contentFromTag = tagDao.getNodes(reloadedTag, branch).iterator().next();
 			NodeGraphFieldContainer fieldContainer = contentDao.getLatestDraftFieldContainer(contentFromTag, german);
@@ -239,7 +238,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibBranch initialBranch = project.getInitialBranch();
 			HibTag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
+			assertNotNull(boot().tagDao().findByUuidGlobal(uuid));
 
 			// 2. Create and Tag a node
 			HibNode node = folder("2015");
@@ -322,11 +321,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 10L));
+			Page<? extends HibTag> tagPage = boot().tagDao().findAllGlobal(ac, new PagingParametersImpl(1, 10L));
 			assertEquals(12, tagPage.getTotalElements());
 			assertEquals(10, tagPage.getSize());
 
-			tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 14L));
+			tagPage = boot().tagDao().findAllGlobal(ac, new PagingParametersImpl(1, 14L));
 			assertEquals(tags().size(), tagPage.getTotalElements());
 			assertEquals(12, tagPage.getSize());
 		}
@@ -376,18 +375,18 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			TagRoot root = meshRoot().getTagRoot();
-			assertEquals(tags().size(), root.computeCount());
+			TagDao root = boot().tagDao();
+			assertEquals(tags().size(), root.globalCount());
 			HibTag tag = tag("red");
-			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.computeCount());
-			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.computeCount());
-			root.addTag(tag);
-			assertEquals(tags().size(), root.computeCount());
-			root.addTag(tag);
-			assertEquals(tags().size(), root.computeCount());
-			root.delete(createBulkContext());
+			root.removeItem(tag.getTagFamily(), tag);
+			assertEquals(tags().size() - 1, root.globalCount());
+			root.removeItem(tag.getTagFamily(), tag);
+			assertEquals(tags().size() - 1, root.globalCount());
+			root.addItem(tag.getTagFamily(), tag);
+			assertEquals(tags().size(), root.globalCount());
+			root.addItem(tag.getTagFamily(), tag);
+			assertEquals(tags().size(), root.globalCount());
+			root.delete(tag, createBulkContext());
 		}
 	}
 
@@ -409,8 +408,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			HibTag tag = tag("car");
-			assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()));
-			assertNull("A tag with the a bogus uuid should not be found but it was.", meshRoot().getTagRoot().findByUuid("bogus"));
+			assertNotNull("The tag with the uuid could not be found", boot().tagDao().findByUuidGlobal(tag.getUuid()));
+			assertNull("A tag with the a bogus uuid should not be found but it was.", boot().tagDao().findByUuidGlobal("bogus"));
 		}
 	}
 
@@ -424,7 +423,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(tag);
 			String uuid = tag.getUuid();
 			CountDownLatch latch = new CountDownLatch(1);
-			HibTag loadedTag = meshRoot().getTagRoot().findByUuid(uuid);
+			HibTag loadedTag = boot().tagDao().findByUuidGlobal(uuid);
 			assertNotNull("The folder could not be found.", loadedTag);
 			String name = loadedTag.getName();
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
@@ -471,9 +470,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibTagFamily tagFamily = tagFamily("basic");
 			HibTag tag = tagDao.create(tagFamily, "someTag", project(), user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
+			assertNotNull(boot().tagDao().findByUuidGlobal(uuid));
 			tagDao.delete(tag, createBulkContext());
-			assertNull(meshRoot().getTagRoot().findByUuid(uuid));
+			assertNull(boot().tagDao().findByUuidGlobal(uuid));
 		}
 	}
 

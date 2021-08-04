@@ -5,6 +5,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.root.RootDao;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -75,14 +76,6 @@ public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<
 	 * @return
 	 */
 	HibTagFamily findByName(HibProject project, String name);
-
-	/**
-	 * Return the tag family with the given uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibTagFamily findByUuid(String uuid);
 
 	/**
 	 * Find the tag family with given uuid (scoped to the given project)

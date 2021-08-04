@@ -11,11 +11,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -83,7 +82,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(meshRoot().getLanguageRoot().findAll().iterator());
+			long size = Iterators.size(boot().languageDao().findAllGlobal().iterator());
 			assertEquals(9, size);
 		}
 	}
@@ -95,8 +94,8 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 			int nChecks = 50000;
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
-				LanguageRoot root = meshRoot().getLanguageRoot();
-				Language language = root.findByLanguageTag("de");
+				LanguageDao root = boot().languageDao();
+				HibLanguage language = root.findByLanguageTag("de");
 				assertNotNull(language);
 			}
 
@@ -111,14 +110,14 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			Language language = meshRoot().getLanguageRoot().findByName("German");
+			HibLanguage language = boot().languageDao().findByName("German");
 			assertNotNull(language);
 
 			assertEquals("German", language.getName());
 			assertEquals("Deutsch", language.getNativeName());
 			assertEquals("de", language.getLanguageTag());
 
-			language = meshRoot().getLanguageRoot().findByName("bogus");
+			language = boot().languageDao().findByName("bogus");
 			assertNull(language);
 		}
 	}
@@ -127,11 +126,11 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			Language language = meshRoot().getLanguageRoot().findByName("German");
-			Language foundLanguage = meshRoot().getLanguageRoot().findByUuid(language.getUuid());
+			HibLanguage language = boot().languageDao().findByName("German");
+			HibLanguage foundLanguage = boot().languageDao().findByUuidGlobal(language.getUuid());
 			assertNotNull(foundLanguage);
 
-			foundLanguage = meshRoot().getLanguageRoot().findByUuid("bogus");
+			foundLanguage = boot().languageDao().findByUuidGlobal("bogus");
 			assertNull(foundLanguage);
 		}
 

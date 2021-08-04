@@ -37,12 +37,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -142,7 +142,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testBatchCreation() {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupRoot root = meshRoot().getGroupRoot();
+			HibBaseElement root = tx.data().permissionRoots().group();
 			roleDao.grantPermissions(role(), root, CREATE_PERM);
 			tx.success();
 		}
@@ -166,7 +166,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.grantPermissions(role(), meshRoot().getGroupRoot(), CREATE_PERM);
+			roleDao.grantPermissions(role(), tx.data().permissionRoots().group(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -222,12 +222,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		tx(tx -> {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			GroupRoot root = meshRoot().getGroupRoot();
+			HibBaseElement root = tx.data().permissionRoots().group();
 
 			roleDao.revokePermissions(role(), root, CREATE_PERM);
 			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user(), root, CREATE_PERM));
 		});
-		String rootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
+		String rootUuid = db().tx(() -> Tx.get().data().permissionRoots().group().getUuid());
 		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid, CREATE_PERM.getRestPerm().getName());
 
 	}

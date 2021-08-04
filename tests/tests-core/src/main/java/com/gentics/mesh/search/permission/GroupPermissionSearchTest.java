@@ -6,9 +6,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
@@ -30,7 +30,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
 
-			Group group = meshRoot().getGroupRoot().findByUuid(response.getUuid());
+			HibGroup group = boot().groupDao().findByUuidGlobal(response.getUuid());
 			System.out.println("Group Uuid:" + response.getUuid());
 			for (HibRole role : userDao.getRoles(user())) {
 				roleDao.revokePermissions(role, group, InternalPermission.READ_PERM);
@@ -48,7 +48,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 		// Now add the perm
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			Group group = meshRoot().getGroupRoot().findByUuid(response.getUuid());
+			HibGroup group = boot().groupDao().findByUuidGlobal(response.getUuid());
 			System.out.println("Group Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), group, InternalPermission.READ_PERM);
 			tx.success();

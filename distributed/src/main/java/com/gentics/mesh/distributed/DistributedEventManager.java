@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.cluster.TopologyEventBridge;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -42,14 +42,14 @@ public class DistributedEventManager {
 
 	private final Lazy<Database> db;
 
-	private final Lazy<BootstrapInitializer> boot;
+	private final Lazy<OrientDBBootstrapInitializer> boot;
 
 	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	private final Lazy<PermissionCache> permCache;
 
 	@Inject
-	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot,
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<OrientDBBootstrapInitializer> boot,
 		RouterStorageRegistryImpl routerStorageRegistry,
 		Lazy<PermissionCache> permCache) {
 		this.vertx = vertx;
@@ -120,7 +120,7 @@ public class DistributedEventManager {
 	}
 
 	private void synchronizeProjectRoutes() throws InvalidNameException {
-		BootstrapInitializer cboot = boot.get();
+		OrientDBBootstrapInitializer cboot = boot.get();
 		Database cdb = db.get();
 
 		cdb.tx(tx -> {

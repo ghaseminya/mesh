@@ -14,11 +14,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -113,8 +112,8 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
-			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
-			for (Project project : projectRoot.findAll()) {
+			ProjectDao projectRoot = boot.projectDao();
+			for (HibProject project : projectRoot.findAllGlobal()) {
 				IndexInfo info = getIndex(project.getUuid());
 				indexInfo.put(info.getIndexName(), info);
 			}
@@ -135,7 +134,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(() -> {
-			return boot.meshRoot().getProjectRoot().findAll().stream()
+			return boot.projectDao().findAllGlobal().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
 					return diffAndSync(Tag.composeIndexName(uuid), uuid);
@@ -172,7 +171,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 
 	@Override
 	public Function<String, HibTag> elementLoader() {
-		return uuid -> boot.meshRoot().getTagRoot().findByUuid(uuid);
+		return uuid -> boot.tagDao().findByUuidGlobal(uuid);
 	}
 
 	@Override

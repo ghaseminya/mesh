@@ -215,7 +215,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
 			try (Tx tx = tx()) {
-				for (HibMicroschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+				for (HibMicroschema microschema : boot().microschemaDao().findAllGlobal()) {
 					toGraph(microschema).remove();
 				}
 				tx.success();

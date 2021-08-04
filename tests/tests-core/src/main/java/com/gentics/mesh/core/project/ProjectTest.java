@@ -14,15 +14,13 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -53,7 +51,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
+			ProjectDao projectRoot = boot().projectDao();
 			HibProject project = createProject("test", "folder");
 			HibProject project2 = projectRoot.findByName(project.getName());
 			assertNotNull(project2);
@@ -69,7 +67,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
 			tx.projectDao().delete(project, bac);
-			assertElement(meshRoot().getProjectRoot(), projectUuid(), false);
+			assertElement(boot().projectDao(), projectUuid(), false);
 		}
 	}
 
@@ -77,10 +75,10 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			long nProjectsBefore = projectRoot.findAll().count();
+			ProjectDao projectRoot = boot().projectDao();
+			long nProjectsBefore = projectRoot.findAllGlobal().count();
 			assertNotNull(createProject("test1234556", "folder"));
-			long nProjectsAfter = projectRoot.findAll().count();
+			long nProjectsAfter = projectRoot.findAllGlobal().count();
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
 	}
@@ -89,7 +87,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends HibProject> page = boot().projectDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 		}
 	}
@@ -98,7 +96,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(meshRoot().getProjectRoot().findAll().iterator());
+			long size = Iterators.size(boot().projectDao().findAllGlobal().iterator());
 			assertEquals(1, size);
 		}
 	}
@@ -107,8 +105,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			assertNull(meshRoot().getProjectRoot().findByName("bogus"));
-			assertNotNull(meshRoot().getProjectRoot().findByName("dummy"));
+			assertNull(boot().projectDao().findByName("bogus"));
+			assertNotNull(boot().projectDao().findByName("dummy"));
 		}
 	}
 
@@ -116,9 +114,9 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = meshRoot().getProjectRoot().findByUuid(projectUuid());
+			HibProject project = boot().projectDao().findByUuidGlobal(projectUuid());
 			assertNotNull(project);
-			project = meshRoot().getProjectRoot().findByUuid("bogus");
+			project = boot().projectDao().findByUuidGlobal("bogus");
 			assertNull(project);
 		}
 	}
@@ -145,11 +143,11 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			BulkActionContext bac = createBulkContext();
-			HibProject foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject foundProject = boot().projectDao().findByUuidGlobal(uuid);
 			assertNotNull(foundProject);
 			tx.projectDao().delete(project, bac);
 			// TODO check for attached nodes
-			foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			foundProject = boot().projectDao().findByUuidGlobal(uuid);
 			assertNull(foundProject);
 		}
 	}
@@ -160,14 +158,13 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
-			roleDao.grantPermissions(role(), meshRoot().getProjectRoot(), CREATE_PERM);
+			roleDao.grantPermissions(role(), tx.data().permissionRoots().project(), CREATE_PERM);
 			// 2. Create the project
 			HibProject project = createProject("TestProject", "folder");
 			assertFalse("The user should not have create permissions on the project.", userDao.hasPermission(user(), project, CREATE_PERM));
-			userDao.inheritRolePermissions(user(), root.getProjectRoot(), project);
+			userDao.inheritRolePermissions(user(), tx.data().permissionRoots().project(), project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
 			assertTrue("The users role should have inherited the initial permission on the project root.",

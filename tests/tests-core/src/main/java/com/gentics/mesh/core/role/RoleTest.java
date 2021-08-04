@@ -26,8 +26,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -160,9 +158,10 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			roleDao.revokePermissions(role(), meshRoot().getGroupRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().group(), CREATE_PERM);
 			HibUser user = user();
-			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user, meshRoot().getGroupRoot(), CREATE_PERM));
+			assertFalse("The create permission to the groups root node should have been revoked.", 
+					userDao.hasPermission(user, tx.data().permissionRoots().group(), CREATE_PERM));
 		}
 	}
 
@@ -170,14 +169,12 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			RoleRoot root = meshRoot().getRoleRoot();
-			long nRolesBefore = root.computeCount();
-
 			final String roleName = "test2";
 			RoleDaoWrapper roleDao = tx.roleDao();
+			long nRolesBefore = roleDao.globalCount();
 			HibRole role = roleDao.create(roleName, user());
 			assertNotNull(role);
-			long nRolesAfter = root.computeCount();
+			long nRolesAfter = roleDao.globalCount();
 			assertEquals(nRolesBefore + 1, nRolesAfter);
 		}
 	}
@@ -330,11 +327,10 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			UserDaoWrapper userDao = tx.userDao();
 			RoleDaoWrapper roleDao = tx.roleDao();
 
-			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			HibRole role = roleDao.create("SuperUser", user());
 			assertFalse(userDao.hasPermission(user(), role, InternalPermission.CREATE_PERM));
-			userDao.inheritRolePermissions(user(), root.getUserRoot(), role);
+			userDao.inheritRolePermissions(user(), tx.data().permissionRoots().user(), role);
 			ac.data().clear();
 			assertTrue(userDao.hasPermission(user(), role, InternalPermission.CREATE_PERM));
 		}

@@ -52,11 +52,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -1240,11 +1240,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), meshRoot().getUserRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().user(), CREATE_PERM);
 			tx.success();
 		}
 
-		String userRootUuid = tx(() -> meshRoot().getUserRoot().getUuid());
+		String userRootUuid = tx(() -> Tx.get().data().permissionRoots().user().getUuid());
 		call(() -> client().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
@@ -1420,10 +1420,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		try (Tx tx = tx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
+			UserDao userRoot = boot().userDao();
 			call(() -> client().deleteUser(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
-			userRoot = meshRoot().getUserRoot();
-			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid));
+			userRoot = boot().userDao();
+			assertNotNull("The user should not have been deleted", userRoot.findByUuidGlobal(uuid));
 		}
 	}
 
@@ -1460,8 +1460,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().deleteUser(uuid));
 
 		try (Tx tx = tx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			assertNull("The user was not deleted.", userRoot.findByUuid(uuid));
+			UserDao userRoot = boot().userDao();
+			assertNull("The user was not deleted.", userRoot.findByUuidGlobal(uuid));
 		}
 		// // Check whether the user was correctly disabled
 		// try (NoTrx tx = tx()) {
@@ -1493,7 +1493,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		MeshResponse<UserResponse> response = client().createUser(request).getResponse().blockingGet();
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().findByUsername(name);
+			HibUser user = boot().userDao().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
@@ -1514,7 +1514,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setHeader(HOST.toString(), "jotschi.de:" + port());
 		MeshResponse<UserResponse> response = request.getResponse().blockingGet();
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().findByUsername(name);
+			HibUser user = boot().userDao().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);

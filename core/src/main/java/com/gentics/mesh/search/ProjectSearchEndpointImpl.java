@@ -86,7 +86,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 
 		registerSearchHandler("tagFamilies", uuid -> {
 			TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
-			return tagFamilyDao.findByUuid(uuid);
+			return tagFamilyDao.findByUuidGlobal(uuid);
 		}, TagFamilyListResponse.class, tagFamilySearchHandler, tagFamilyExamples.getTagFamilyListResponse(), false);
 	}
 

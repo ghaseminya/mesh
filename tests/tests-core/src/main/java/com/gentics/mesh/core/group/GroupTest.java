@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -146,7 +145,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			assertNotNull(group);
 			String uuid = group.getUuid();
 			groupDao.delete(group, createBulkContext());
-			group = meshRoot().getGroupRoot().findByUuid(uuid);
+			group = boot().groupDao().findByUuidGlobal(uuid);
 			assertNull(group);
 		}
 	}
@@ -155,14 +154,13 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			MeshRoot root = meshRoot();
 			UserDaoWrapper userDao = tx.userDao();
 			GroupDaoWrapper groupDao = tx.groupDao();
 			HibUser user = user();
 			InternalActionContext ac = mockActionContext();
 			HibGroup group = groupDao.create("newGroup", user);
 			assertFalse(userDao.hasPermission(user, group, InternalPermission.CREATE_PERM));
-			userDao.inheritRolePermissions(user, root.getGroupRoot(), group);
+			userDao.inheritRolePermissions(user, tx.data().permissionRoots().group(), group);
 			ac.data().clear();
 			assertTrue(userDao.hasPermission(user, group, InternalPermission.CREATE_PERM));
 		}
@@ -208,8 +206,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			// TODO add users to group?
 			BulkActionContext bac = createBulkContext();
 			groupDao.delete(group, bac);
-			assertElement(meshRoot().getGroupRoot(), uuid, false);
-			assertElement(meshRoot().getUserRoot(), userUuid, true);
+			assertElement(boot().groupDao(), uuid, false);
+			assertElement(boot().userDao(), userUuid, true);
 			assertEquals(1, bac.batch().getEntries().size());
 		}
 

@@ -459,7 +459,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamilyUuid));
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		try (Tx tx = tx()) {
-			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
+			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", boot().tagDao().findByUuidGlobal(response.getUuid()));
 		}
 
 		String uuid = response.getUuid();
