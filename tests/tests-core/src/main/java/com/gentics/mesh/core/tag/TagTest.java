@@ -16,6 +16,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -24,7 +25,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -375,18 +376,18 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			TagDao root = boot().tagDao();
-			assertEquals(tags().size(), root.globalCount());
+			TagRoot root = ((OrientDBBootstrapInitializer) boot()).meshRoot().getTagRoot();
+			assertEquals(tags().size(), root.computeCount());
 			HibTag tag = tag("red");
-			root.removeItem(tag.getTagFamily(), tag);
-			assertEquals(tags().size() - 1, root.globalCount());
-			root.removeItem(tag.getTagFamily(), tag);
-			assertEquals(tags().size() - 1, root.globalCount());
-			root.addItem(tag.getTagFamily(), tag);
-			assertEquals(tags().size(), root.globalCount());
-			root.addItem(tag.getTagFamily(), tag);
-			assertEquals(tags().size(), root.globalCount());
-			root.delete(tag, createBulkContext());
+			root.removeTag(tag);
+			assertEquals(tags().size() - 1, root.computeCount());
+			root.removeTag(tag);
+			assertEquals(tags().size() - 1, root.computeCount());
+			root.addTag(tag);
+			assertEquals(tags().size(), root.computeCount());
+			root.addTag(tag);
+			assertEquals(tags().size(), root.computeCount());
+			root.delete(createBulkContext());
 		}
 	}
 

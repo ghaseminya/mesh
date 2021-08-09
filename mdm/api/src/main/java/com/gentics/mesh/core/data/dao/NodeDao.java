@@ -31,7 +31,7 @@ import com.gentics.mesh.path.Path;
 /**
  * Dao for {@link HibNode}
  */
-public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
+public interface NodeDao extends DaoGlobal<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
 
 	/**
 	 * Load the node by uuid.

@@ -340,4 +340,19 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	public boolean update(HibProject root, HibNode element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getNodeRoot().update(toGraph(element), ac, batch);
 	}
+
+	@Override
+	public HibNode findByUuidGlobal(String uuid) {
+		return boot.get().meshRoot().findNodeByUuid(uuid);
+	}
+
+	@Override
+	public long globalCount() {
+		return boot.get().meshRoot().nodeCount();
+	}
+
+	@Override
+	public Result<? extends HibNode> findAllGlobal() {
+		return boot.get().meshRoot().findAllNodes();
+	}
 }

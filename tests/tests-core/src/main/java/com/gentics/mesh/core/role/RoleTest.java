@@ -374,7 +374,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				roleDao.delete(role, context);
 				tx2.success();
 			}
-			assertNotNull(boot().roleDao().findByUuidGlobal(uuid));
+			assertNull(boot().roleDao().findByUuidGlobal(uuid));
 			assertEquals("The role event was not included in the batch", 1, context.batch().getEntries().size());
 		}
 	}
