@@ -24,16 +24,15 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -241,9 +240,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		Set<String> activeIndices = new HashSet<>();
 		db.tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			BranchDaoWrapper branchDao = tx.branchDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			ProjectDao projectDao = tx.projectDao();
+			BranchDao branchDao = tx.branchDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			for (HibProject currentProject : projectDao.findAllGlobal()) {
 				for (HibBranch branch : branchDao.findAll(currentProject)) {
 					for (HibSchemaVersion version : schemaDao.findActiveSchemaVersions(branch)) {
@@ -279,8 +278,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			BranchDaoWrapper branchDao = tx.branchDao();
+			ProjectDao projectDao = tx.projectDao();
+			BranchDao branchDao = tx.branchDao();
 			
 			return projectDao.findAllGlobal().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
@@ -302,8 +301,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type,
 		Bucket bucket) {
 		return db.tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
@@ -525,7 +524,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param context
 	 */
 	private void store(Set<Single<String>> obs, HibNode node, String branchUuid, ContainerType type, GenericEntryContext context) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 		if (context.getLanguageTag() != null) {
 			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
@@ -599,7 +598,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return
 	 */
 	private Observable<IndexBulkEntry> storeForBulk(HibNode node, String branchUuid, ContainerType type, GenericEntryContext context) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 
 		if (context.getLanguageTag() != null) {
 			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
@@ -736,8 +735,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			// Not found
 			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
-			BranchDaoWrapper branchDao = Tx.get().branchDao();
-			ContentDaoWrapper contentDao = Tx.get().contentDao();
+			BranchDao branchDao = Tx.get().branchDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 
 			HibProject project = node.getProject();
 			List<UpdateBulkEntry> entries = new ArrayList<>();

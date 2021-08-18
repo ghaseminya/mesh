@@ -23,7 +23,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * @param <RM>
  *            Response REST Model for the element of this action
  */
-public interface DAOActions<T extends HibCoreElement, RM extends RestModel> extends LoadAllAction<T> {
+public interface DAOActions<T extends HibCoreElement<RM>, RM extends RestModel> extends LoadAllAction<T> {
 
 	/**
 	 * Create the entity with the given context and uuid information.

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.dao;
 
-import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
@@ -11,78 +10,55 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
 
-/**
+/* 
  * Aggregated collection of DAOs
  */
 public interface DaoCollection {
-	
-	@Getter
-	UserDaoWrapper userDao();
 
-	@Getter
+	UserDao userDao();
+
 	UserDAOActions userActions();
 
-	@Getter
-	GroupDaoWrapper groupDao();
+	GroupDao groupDao();
 
-	@Getter
 	GroupDAOActions groupActions();
 
-	@Getter
-	RoleDaoWrapper roleDao();
+	RoleDao roleDao();
 
-	@Getter
 	RoleDAOActions roleActions();
 
-	@Getter
-	ProjectDaoWrapper projectDao();
+	ProjectDao projectDao();
 
-	@Getter
 	ProjectDAOActions projectActions();
 
-	@Getter
-	LanguageDaoWrapper languageDao();
+	LanguageDao languageDao();
 
-	@Getter
-	JobDaoWrapper jobDao();
+	JobDao jobDao();
 
-	@Getter
-	TagFamilyDaoWrapper tagFamilyDao();
+	TagFamilyDao tagFamilyDao();
 
-	@Getter
 	TagFamilyDAOActions tagFamilyActions();
 
-	@Getter
-	TagDaoWrapper tagDao();
+	TagDao tagDao();
 
-	@Getter
 	TagDAOActions tagActions();
 
-	@Getter
-	BranchDaoWrapper branchDao();
+	BranchDao branchDao();
 
-	@Getter
 	BranchDAOActions branchActions();
 
-	@Getter
-	MicroschemaDaoWrapper microschemaDao();
+	MicroschemaDao microschemaDao();
 
-	@Getter
 	MicroschemaDAOActions microschemaActions();
 
-	@Getter
-	SchemaDaoWrapper schemaDao();
+	SchemaDao schemaDao();
 
-	@Getter
 	SchemaDAOActions schemaActions();
 
-	@Getter
-	BinaryDaoWrapper binaryDao();
+	BinaryDao binaryDao();
 
-	@Getter
-	NodeDaoWrapper nodeDao();
+	NodeDao nodeDao();
 
-	@Getter
-	ContentDaoWrapper contentDao();
+	ContentDao contentDao();
 
 }

@@ -7,36 +7,7 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 
-/**
- * Basic definition for graph transactions.
- */
-public interface BaseTransaction extends AutoCloseable {
-
-	/**
-	 * Commit the transaction.
-	 */
-	void commit();
-
-	/**
-	 * Rollback the transaction.
-	 */
-	void rollback();
-
-	/**
-	 * Mark the transaction as succeeded. The autoclosable will invoke a commit when completing.
-	 */
-	void success();
-
-	/**
-	 * Mark the transaction as failed. The autoclosable will invoke a rollback when completing.
-	 */
-	void failure();
-
-	/**
-	 * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
-	 */
-	@Override
-	void close();
+public interface GraphDBBaseTransaction extends BaseTransaction {
 
 	/**
 	 * Return a framed / wrapped traversal.
@@ -68,12 +39,4 @@ public interface BaseTransaction extends AutoCloseable {
 	 * @return
 	 */
 	<E extends Element> E getElement(Object id);
-
-	/**
-	 * Return the id of the transaction.
-	 * 
-	 * @return
-	 */
-	int txId();
-
 }

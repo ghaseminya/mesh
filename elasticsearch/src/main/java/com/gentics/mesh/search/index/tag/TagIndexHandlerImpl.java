@@ -16,7 +16,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
@@ -146,7 +145,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		return db.tx(tx -> {
 			Set<String> activeIndices = new HashSet<>();
-			ProjectDaoWrapper projectDao = tx.projectDao();
+			ProjectDao projectDao = tx.projectDao();
 			for (HibProject project : projectDao.findAllGlobal()) {
 				activeIndices.add(Tag.composeIndexName(project.getUuid()));
 			}
