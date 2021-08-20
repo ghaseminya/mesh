@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
@@ -420,4 +421,13 @@ public interface NodeDao extends DaoGlobal<HibNode>, DaoTransformable<HibNode, N
 	 * @return
 	 */
 	HibNode create(HibProject project, HibUser user, HibSchemaVersion version);
+
+	/**
+	 * Set the graph field container to be the (only) published for the given branch.
+	 *
+	 * @param ac
+	 * @param container
+	 * @param branchUuid
+	 */
+	void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
 }
