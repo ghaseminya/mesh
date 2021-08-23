@@ -66,7 +66,7 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Convert the hib node field container to a graph counterpart.
+	 * Convert the hib binary field to a graph counterpart.
 	 * 
 	 * @param element
 	 * @return
@@ -76,7 +76,7 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Convert the hib node field container to a graph counterpart.
+	 * Convert the hib micronode field to a graph counterpart.
 	 * 
 	 * @param element
 	 * @return
@@ -86,7 +86,7 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Convert the hib node field container to a graph counterpart.
+	 * Convert the hib node field to a graph counterpart.
 	 * 
 	 * @param element
 	 * @return
@@ -96,7 +96,7 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Convert the hib node field container to a graph counterpart.
+	 * Convert the generic hib field container to a graph counterpart.
 	 * 
 	 * @param element
 	 * @return
@@ -291,12 +291,12 @@ public final class HibClassConverter {
 		return checkAndCast(binary, Binary.class);
 	}
 	/**
-	 * Convert the node to a graph element.
+	 * Convert the micronode to a graph element.
 	 * 
 	 * @param node
 	 * @return
 	 */
-	public static Node toGraph(HibMicronode node) {
+	public static Micronode toGraph(HibMicronode node) {
 		return checkAndCast(node, Micronode.class);
 	}
 
@@ -374,10 +374,10 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Apply the cast to the graph element and return it.
+	 * Apply the cast to the graph element d and return it.
 	 * 
 	 * @param <T>
-	 *            Type of the graph element
+	 *            Type of the graph field
 	 * @param element
 	 *            MDM element to be casted
 	 * @param clazz
@@ -392,7 +392,7 @@ public final class HibClassConverter {
 		if (clazz.isInstance(element)) {
 			return (T) clazz.cast(element);
 		} else {
-			throw new RuntimeException("The received element was not an OrientDB element. Got: " + element.getClass().getName());
+			throw new RuntimeException("The received field was not an OrientDB field. Got: " + element.getClass().getName());
 		}
 	}
 }
