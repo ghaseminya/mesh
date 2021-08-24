@@ -34,6 +34,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -50,7 +51,6 @@ import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.generator.RAMLGenerator;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -161,7 +161,7 @@ public class AdminHandler extends AbstractHandler {
 		try {
 			vertx.eventBus().publish(GRAPH_BACKUP_START.address, null);
 			mesh.setStatus(MeshStatus.BACKUP);
-			return db.backupGraph(((OrientDBMeshOptions)options).getStorageOptions().getBackupDirectory());
+			return db.backupDatabase(((OrientDBMeshOptions)options).getStorageOptions().getBackupDirectory());
 		} catch (GenericRestException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -221,7 +221,7 @@ public class AdminHandler extends AbstractHandler {
 			mesh.setStatus(MeshStatus.RESTORE);
 			vertx.eventBus().publish(GRAPH_RESTORE_START.address, null);
 			db.stop();
-			db.restoreGraph(latestFile.getAbsolutePath());
+			db.restoreDatabase(latestFile.getAbsolutePath());
 			// TODO add changelog execution
 			db.setupConnectionPool();
 			boot.globalCacheClear();
@@ -267,7 +267,7 @@ public class AdminHandler extends AbstractHandler {
 			String exportDir = ((OrientDBMeshOptions)options).getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
 			vertx.eventBus().publish(GRAPH_EXPORT_START.address, null);
-			db.exportGraph(exportDir);
+			db.exportDatabase(exportDir);
 			vertx.eventBus().publish(GRAPH_EXPORT_FINISHED.address, null);
 			return message(ac, "export_finished");
 		}, model -> ac.send(model, OK));
@@ -295,7 +295,7 @@ public class AdminHandler extends AbstractHandler {
 		try {
 
 			vertx.eventBus().publish(GRAPH_IMPORT_START.address, null);
-			db.importGraph(latestFile.getAbsolutePath());
+			db.importDatabase(latestFile.getAbsolutePath());
 			boot.globalCacheClear();
 			// TODO apply changelog after import
 			// TODO flush references, clear & init project routers 
