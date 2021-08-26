@@ -198,15 +198,6 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter);
 
 	/**
-	 * Return the api path for the role.
-	 * 
-	 * @param role
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibRole role, InternalActionContext ac);
-
-	/**
 	 * Apply the permissions for the given element.
 	 * 
 	 * @param element

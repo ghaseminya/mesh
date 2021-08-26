@@ -142,15 +142,6 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 		String uuid, EventQueueBatch batch);
 
 	/**
-	 * Return the API path for the given project.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibProject project, InternalActionContext ac);
-
-	/**
 	 * Create a schema assign event for the given input values.
 	 * 
 	 * @param project

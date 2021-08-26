@@ -248,13 +248,4 @@ public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup
 	 * @return
 	 */
 	HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid);
-
-	/**
-	 * Return the API path.
-	 * 
-	 * @param group
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibGroup group, InternalActionContext ac);
 }

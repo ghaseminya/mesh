@@ -125,15 +125,6 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	HibJob enqueueBranchMigration(HibUser creator, HibBranch branch);
 
 	/**
-	 * Return the api path of the job.
-	 * 
-	 * @param job
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibJob job, InternalActionContext ac);
-
-	/**
 	 * Update the job.
 	 * 
 	 * @param job

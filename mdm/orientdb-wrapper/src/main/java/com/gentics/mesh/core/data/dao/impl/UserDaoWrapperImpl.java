@@ -711,4 +711,9 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	public Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		return toGraph(fromUser).getGroups(authUser, pagingInfo);
 	}
+
+	@Override
+	public String getAPIPath(HibUser element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
+	}
 }

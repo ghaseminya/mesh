@@ -168,15 +168,6 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	boolean update(HibTag tag, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
-	 * Return the API path of the tag.
-	 * 
-	 * @param tag
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibTag tag, InternalActionContext ac);
-
-	/**
 	 * Load the tag of the branch.
 	 * 
 	 * @param branch

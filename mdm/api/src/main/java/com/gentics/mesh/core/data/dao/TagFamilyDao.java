@@ -111,15 +111,6 @@ public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<
 	void delete(HibTagFamily tagFamily, BulkActionContext bac);
 
 	/**
-	 * Return the api path for the tag family.
-	 * 
-	 * @param tagFamily
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac);
-
-	/**
 	 * Return a page of tags.
 	 * 
 	 * @param tagFamily

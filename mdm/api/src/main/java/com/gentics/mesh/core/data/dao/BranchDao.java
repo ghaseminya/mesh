@@ -89,15 +89,6 @@ public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, 
 	HibBranch findByName(HibProject project, String name);
 
 	/**
-	 * Return the API path for the given branch.
-	 * 
-	 * @param branch
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibBranch branch, InternalActionContext ac);
-
-	/**
 	 * Update the branch.
 	 * 
 	 * @param branch
